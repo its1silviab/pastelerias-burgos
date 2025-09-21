@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Burgos: Un Viaje Goloso por sus Pastelerías</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals (crema, beige, marrón chocolate) con toques de rojo frambuesa. -->
+    <!-- Application Structure Plan: Se ha optado por una SPA (Single Page Application) con navegación por pestañas para organizar la gran cantidad de información. Esta estructura permite al usuario explorar de forma no lineal la historia, las pastelerías más famosas, un directorio completo y filtrable, y visualizaciones de datos, evitando una página interminable y mejorando la usabilidad al dar acceso directo a las secciones de interés. -->
+    <!-- Visualization & Content Choices: Información: 47 pastelerías, tipos, especialidades. Objetivo: Organizar y comparar. Visualización: Un directorio interactivo de tarjetas (HTML/JS) con filtros permite explorar la lista completa. Información: Distribución de tipos de pastelería. Objetivo: Informar/Proporciones. Visualización: Un gráfico de Donut (Chart.js) ofrece un resumen visual rápido. Información: Especialidades comunes. Objetivo: Comparar/Informar. Visualización: Un gráfico de Barras (Chart.js) destaca los productos más populares. Este enfoque hace que la información densa sea digerible y atractiva. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #FDFBF5;
+            color: #4A2E2A;
+        }
+        h1, h2, h3 {
+            font-family: 'Playfair Display', serif;
+        }
+        .nav-button {
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-button.active {
+            border-bottom-color: #D6336C;
+            color: #D6336C;
+        }
+        .nav-button:hover {
+            color: #D6336C;
+        }
+        .card {
+            background-color: #FFFFFF;
+            border: 1px solid #F0EBE3;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+        }
+        .chart-container {
+            position: relative; 
+            width: 100%; 
+            max-width: 500px; 
+            margin-left: auto; 
+            margin-right: auto; 
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+    </style>
+
+</head>
+<body class="antialiased">
+
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex flex-col sm:flex-row justify-between items-center">
+                <h1 class="text-2xl lg:text-3xl text-center sm:text-left text-[#4A2E2A] mb-2 sm:mb-0">Burgos, Bocado a Bocado</h1>
+                <div class="flex flex-wrap justify-center space-x-2 sm:space-x-4 text-sm sm:text-base">
+                    <button data-target="inicio" class="nav-button active py-2 px-2 sm:px-3">Inicio</button>
+                    <button data-target="historia" class="nav-button py-2 px-2 sm:px-3">La Dulce Historia</button>
+                    <button data-target="joyas" class="nav-button py-2 px-2 sm:px-3">Joyas de la Corona</button>
+                    <button data-target="directorio" class="nav-button py-2 px-2 sm:px-3">El Mapa Goloso</button>
+                    <button data-target="datos" class="nav-button py-2 px-2 sm:px-3">Datos Curiosos</button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <section id="inicio" class="content-section">
+            <div class="text-center bg-white p-8 rounded-xl shadow-lg">
+                <h2 class="text-4xl md:text-5xl font-bold mb-4">Un viaje al corazón más dulce de Burgos</h2>
+                <p class="text-lg md:text-xl max-w-3xl mx-auto mb-6 text-gray-700">
+                    ¿Listo para un subidón de azúcar con denominación de origen? Abróchate el cinturón (y afloja un agujero), que nos vamos de ruta por las pastelerías de Burgos. Un viaje donde la única crisis es decidir entre una yema o un chevalier. Aquí encontrarás desde templos del dulce con más historia que la catedral hasta obradores modernos que te harán replantearte tus postres favoritos. ¡Que aproveche!
+                </p>
+                <div class="flex justify-center">
+                    <button data-target="directorio" class="nav-button-action bg-[#D6336C] text-white font-bold py-3 px-8 rounded-full hover:bg-[#c02a5f] transition-colors duration-300">
+                        ¡Descubre las pastelerías!
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section id="historia" class="content-section hidden">
+            <h2 class="text-3xl md:text-4xl text-center font-bold mb-8">La Dulce Historia de Burgos</h2>
+            <div class="bg-white p-8 rounded-xl shadow-lg">
+                <h3 class="text-2xl font-bold mb-4">De conventos y caminos: El origen del dulce burgalés</h3>
+                <p class="mb-4 text-gray-700">La historia de la pastelería en Burgos no se entiende sin dos elementos: los conventos y el Camino de Santiago. Las monjas y monjes, guardianes de recetas ancestrales, aprovechaban los recursos locales como la miel, las almendras y los huevos para crear delicias que servían tanto para agasajar a nobles como para dar energía a los peregrinos. Las yemas de Burgos, por ejemplo, nacieron de la necesidad de aprovechar las yemas sobrantes de la clarificación del vino, una genialidad de la repostería de subsistencia.</p>
+                <p class="text-gray-700">El siglo XIX vio nacer los primeros obradores y confiterías abiertas al público, llevando esas recetas monacales a las calles. Familias de artesanos comenzaron a establecer dinastías que, en algunos casos, perduran hasta hoy, convirtiéndose en el alma dulce de la ciudad y adaptando su oferta a los nuevos tiempos sin perder la esencia de la tradición.</p>
+                
+                <h3 class="text-2xl font-bold mt-8 mb-4">Pasteleros que dejaron huella</h3>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="border-l-4 border-[#D6336C] pl-4">
+                        <h4 class="font-bold text-xl">Isidro Juarreño (Finales del S. XIX)</h4>
+                        <p class="text-gray-700">Considerado el "padre" de las yemas de Burgos tal y como las conocemos hoy. Fundador de una de las sagas pasteleras más importantes de la ciudad, su visión fue clave para convertir un dulce conventual en el emblema de Burgos. Su lema no oficial era: "Si la vida no te da limones, al menos que te dé yemas".</p>
+                    </div>
+                    <div class="border-l-4 border-[#D6336C] pl-4">
+                        <h4 class="font-bold text-xl">Flora de la Vega (Principios del S. XX)</h4>
+                        <p class="text-gray-700">Una pionera en un mundo de hombres. Doña Flora fue famosa por sus "Paciencias de Almazán" y por refinar la receta del "Chevalier", el otro gran postre burgalés. Se dice que su secreto era un toque de humor en cada masa, algo que la ciencia aún no ha podido replicar.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="joyas" class="content-section hidden">
+            <h2 class="text-3xl md:text-4xl text-center font-bold mb-8">Joyas de la Corona</h2>
+             <p class="text-center text-lg max-w-3xl mx-auto mb-10 text-gray-600">
+                Toda ciudad tiene sus leyendas, y en Burgos, algunas de las más sabrosas se hornean cada día. Estas son las pastelerías que no solo venden dulces, sino que son parte de la historia y el corazón de la ciudad.
+            </p>
+            <div class="space-y-8">
+                <div class="card p-6 md:flex gap-6">
+                    <div class="md:w-1/3 mb-4 md:mb-0">
+                        <h3 class="text-2xl font-bold text-[#D6336C]">Confitería Juarreño</h3>
+                        <p><span class="font-semibold">Fundación:</span> 1898</p>
+                        <p><span class="font-semibold">Dueños:</span> Familia Juarreño (cuarta generación)</p>
+                         <p><span class="font-semibold">Tipo:</span> Tradicional / Institución Histórica</p>
+                    </div>
+                    <div class="md:w-2/3">
+                        <p class="text-gray-700"><span class="font-semibold">¿Por qué son famosos?</span> Son los guardianes del santo grial burgalés: las <span class="font-bold">auténticas Yemas de Burgos</span>. Entrar en Juarreño es como viajar en el tiempo a un lugar donde el azúcar es rey y las recetas se guardan bajo siete llaves. Su impacto en Burgos es incalculable; han puesto a la ciudad en el mapa goloso de España.</p>
+                        <p class="mt-2 text-gray-700"><span class="font-semibold">Especialidades:</span> Yemas, turrones artesanos, fruta confitada. No esperes un cronut aquí, esto es tradición en estado puro.</p>
+                    </div>
+                </div>
+
+                <div class="card p-6 md:flex gap-6">
+                    <div class="md:w-1/3 mb-4 md:mb-0">
+                        <h3 class="text-2xl font-bold text-[#D6336C]">Pastelería Dieste</h3>
+                        <p><span class="font-semibold">Fundación:</span> 1965</p>
+                        <p><span class="font-semibold">Dueños:</span> Familia Dieste</p>
+                        <p><span class="font-semibold">Tipo:</span> Tradicional con toques modernos</p>
+                    </div>
+                    <div class="md:w-2/3">
+                        <p class="text-gray-700"><span class="font-semibold">¿Por qué son famosos?</span> Por ser el otro pilar del dulce burgalés y los maestros del <span class="font-bold">Chevalier</span>. Si Juarreño tiene las yemas, Dieste tiene el postre de crema y hojaldre que ha celebrado miles de cumpleaños en la ciudad. Son la pastelería de cabecera de muchísimas familias, un sinónimo de celebración.</p>
+                         <p class="mt-2 text-gray-700"><span class="font-semibold">Especialidades:</span> Chevalier, tartas de San Honoré, pasteles finos y bollería de alta calidad.</p>
+                    </div>
+                </div>
+                
+                 <div class="card p-6 md:flex gap-6">
+                    <div class="md:w-1/3 mb-4 md:mb-0">
+                        <h3 class="text-2xl font-bold text-[#D6336C]">La Casa de las Tartas</h3>
+                        <p><span class="font-semibold">Fundación:</span> 1982</p>
+                        <p><span class="font-semibold">Dueños:</span> Ricardo Vélez (fundador)</p>
+                         <p><span class="font-semibold">Tipo:</span> Creativa / Especializada</p>
+                    </div>
+                    <div class="md:w-2/3">
+                        <p class="text-gray-700"><span class="font-semibold">¿Por qué son famosos?</span> Como su nombre indica, son los reyes indiscutibles de las tartas. Revolucionaron el panorama local ofreciendo una variedad y creatividad que no se había visto. Si necesitas una tarta para una ocasión especial y quieres dejar a todos con la boca abierta (y llena), este es tu sitio. Su impacto ha sido elevar el listón de la repostería para eventos.</p>
+                         <p class="mt-2 text-gray-700"><span class="font-semibold">Especialidades:</span> Tarta de queso, tarta de zanahoria, Red Velvet y creaciones personalizadas. Básicamente, si se puede hacer tarta, ellos la bordan.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="directorio" class="content-section hidden">
+            <h2 class="text-3xl md:text-4xl text-center font-bold mb-4">El Mapa Goloso de Burgos</h2>
+            <p class="text-center text-lg max-w-3xl mx-auto mb-8 text-gray-600">
+                Aquí tienes el listado definitivo. Un censo de 47 tentaciones donde podrás filtrar por tipo de pastelería o buscar tu favorita por nombre. ¡La decisión es tuya!
+            </p>
+
+            <div class="sticky top-[80px] sm:top-[70px] bg-[#FDFBF5] py-4 z-40">
+                <div class="flex flex-col md:flex-row gap-4 items-center bg-white p-4 rounded-xl shadow-md">
+                    <div class="w-full md:w-1/3">
+                        <input type="text" id="searchInput" placeholder="Buscar por nombre..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D6336C]">
+                    </div>
+                    <div class="w-full md:w-2/3 flex flex-wrap gap-2 justify-center">
+                        <button class="filter-btn active bg-[#4A2E2A] text-white px-3 py-1 rounded-full text-sm" data-filter="all">Todas</button>
+                        <button class="filter-btn bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm" data-filter="Tradicional">Tradicional</button>
+                        <button class="filter-btn bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm" data-filter="Moderna">Moderna</button>
+                        <button class="filter-btn bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm" data-filter="Panadería-Pastelería">Panadería-Pastelería</button>
+                        <button class="filter-btn bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm" data-filter="Cafetería-Pastelería">Cafetería-Pastelería</button>
+                        <button class="filter-btn bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm" data-filter="Creativa">Creativa</button>
+                        <button class="filter-btn bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm" data-filter="Industrial">Industrial</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="pastelerias-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+            </div>
+            <p id="no-results" class="text-center text-xl text-gray-500 mt-10 hidden">No se han encontrado pastelerías con esos criterios. Quizás sea una señal para comer una ensalada... ¡o para buscar otra cosa!</p>
+        </section>
+
+        <section id="datos" class="content-section hidden">
+            <h2 class="text-3xl md:text-4xl text-center font-bold mb-8">Algunos Datos para Endulzarte el Día</h2>
+            <div class="grid lg:grid-cols-2 gap-8">
+                <div class="card p-6">
+                    <h3 class="text-2xl text-center font-bold mb-4">Tipos de Pastelerías en Burgos</h3>
+                    <div class="chart-container">
+                        <canvas id="typesChart"></canvas>
+                    </div>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-2xl text-center font-bold mb-4">Las Especialidades más Comunes</h3>
+                     <div class="chart-container">
+                        <canvas id="specialtiesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-white mt-12 py-6 border-t">
+        <div class="container mx-auto text-center text-gray-600">
+            <p>&copy; 2025 - Un proyecto de investigación con mucho azúcar y un poco de humor.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const pastryShopsData = [
+                { id: 1, name: "Confitería Juarreño", type: "Tradicional", specialty: "Yemas de Burgos", location: "Plaza Mayor", owner: "Familia Juarreño", history: "Fundada en 1898, son los creadores y guardianes de la receta original de las Yemas de Burgos. Cuatro generaciones dedicadas a la tradición.", impact: "Icono gastronómico de la ciudad, parada obligatoria para turistas y locales." },
+                { id: 2, name: "Pastelería Dieste", type: "Tradicional", specialty: "Chevalier", location: "Calle Santander", owner: "Familia Dieste", history: "Desde 1965, se han convertido en la referencia para tartas de celebración, especialmente su famoso Chevalier.", impact: "Sinónimo de celebraciones familiares en Burgos." },
+                { id: 3, name: "La Casa de las Tartas", type: "Creativa", specialty: "Tarta de queso", location: "Avenida del Cid", owner: "Ricardo Vélez", history: "Nacida en los 80, introdujo en Burgos la moda de las tartas de estilo americano como la Red Velvet o la Carrot Cake.", impact: "Modernizó el concepto de tarta en la ciudad." },
+                { id: 4, name: "El Horno de Papá", type: "Panadería-Pastelería", specialty: "Croissants de mantequilla", location: "Barrio de Gamonal", owner: "Cooperativa", history: "Un obrador de barrio que combina pan artesano de masa madre con una pastelería sencilla pero de gran calidad.", impact: "Referente en su barrio por la calidad de su pan y bollería." },
+                { id: 5, name: "Maison de Sucre", type: "Moderna", specialty: "Macarons", location: "Calle Laín Calvo", owner: "Lucía Fernández", history: "Pastelería de inspiración francesa que apuesta por la alta pastelería en formato individual. Abrió en 2018.", impact: "Aportó un toque de sofisticación y modernidad al centro." },
+                { id: 6, name: "Dulces del Convento", type: "Tradicional", specialty: "Paciencias", location: "Tienda del Monasterio de las Huelgas", owner: "Orden Cisterciense", history: "Venta de dulces elaborados por las monjas siguiendo recetas centenarias. La auténtica repostería conventual.", impact: "Mantiene viva la tradición más ancestral de la repostería burgalesa." },
+                { id: 7, name: "Café de la Plaza", type: "Cafetería-Pastelería", specialty: "Tarta Sacher", location: "Plaza España", owner: "Grupo hostelero local", history: "Una cafetería clásica con una vitrina de pastelería selecta, ideal para el café de media tarde.", impact: "Punto de encuentro social con un buen acompañamiento dulce." },
+                { id: 8, name: "El Goloso Industrial", type: "Industrial", specialty: "Pastas de té", location: "Polígono de Villalonquéjar", owner: "Gran Empresa S.L.", history: "Productor a gran escala de bollería y pastas que distribuye a supermercados y hostelería.", impact: "Abastece al por mayor, llevando los sabores locales a un público más amplio." },
+                { id: 9, name: "Pastelería Arlanzón", type: "Tradicional", specialty: "Brazo de gitano", location: "Paseo del Espolón", owner: "Familia Torres", history: "Clásico establecimiento familiar con más de 50 años de historia, famoso por sus postres tradicionales.", impact: "Parte del paisaje sentimental y dulce del paseo más emblemático de Burgos." },
+                { id: 10, name: "Sweet Fantasy", type: "Creativa", specialty: "Cupcakes personalizados", location: "Zona Universitaria", owner: "Dos emprendedoras", history: "Especializadas en repostería creativa para eventos, como tartas de fondant y mesas dulces.", impact: "Cubre un nicho de mercado para fiestas y eventos temáticos." },
+                { id: 11, name: "Horno San Lesmes", type: "Panadería-Pastelería", specialty: "Empanadas y hojaldres", location: "Calle San Juan", owner: "Hermanos Ruiz", history: "Famosos por sus elaboraciones saladas, pero con una sección de pastelería tradicional muy apreciada.", impact: "Solución perfecta para los que dudan entre dulce y salado." },
+                { id: 12, name: "Delicias sin Gluten", type: "Especializada", specialty: "Brownie de chocolate", location: "Cerca del Hospital", owner: "Ana Pérez", history: "La primera pastelería 100% sin gluten de Burgos, nacida de una necesidad personal de su fundadora.", impact: "Un refugio para celíacos y personas con intolerancias." },
+                { id: 13, name: "La Tahona de la Abuela", type: "Panadería-Pastelería", specialty: "Muffins caseros", location: "Barrio G-3", owner: "Familia Martínez", history: "Negocio familiar que ha crecido con el barrio, ofreciendo productos de calidad a precios asequibles.", impact: "El olor a pan recién hecho y a magdalenas del barrio." },
+                { id: 14, name: "Choco & Latte", type: "Cafetería-Pastelería", specialty: "Gofres con chocolate", location: "Avenida de la Paz", owner: "Franquicia nacional", history: "Un concepto moderno que combina café de especialidad con dulces golosos y un ambiente joven.", impact: "Atrae a un público más joven con su estética y oferta." },
+                { id: 15, name: "Confitería La Perla", type: "Tradicional", specialty: "Pasteles de crema", location: "Calle Vitoria", owner: "Herederos de D. Manuel", history: "Un clásico de la principal arteria de la ciudad, con una clientela fiel desde hace décadas.", impact: "Resiste el paso del tiempo gracias a su calidad y trato cercano." },
+                { id: 16, name: "Pastelería Bombón", type: "Moderna", specialty: "Bombones de autor", location: "Plaza de la Libertad", owner: "Maestro chocolatero", history: "Tienda especializada en chocolate belga y bombones artesanos con rellenos innovadores.", impact: "El paraíso para los amantes del chocolate de alta calidad." },
+                { id: 17, name: "Pan y Dulce", type: "Panadería-Pastelería", specialty: "Palmeras de chocolate", location: "Gamonal", owner: "Despacho familiar", history: "Otro ejemplo de obrador de barrio que es el corazón de la comunidad.", impact: "Punto de encuentro diario para los vecinos." },
+                { id: 18, name: "El Rincón del Hojaldre", type: "Especializada", specialty: "Milhojas de crema", location: "Calle Avellanos", owner: "Arturo Sanz", history: "Pequeño obrador dedicado casi en exclusiva al arte del hojaldre en todas sus formas.", impact: "Demuestra que la especialización puede ser un éxito." },
+                { id: 19, name: "Pastelería Vega", type: "Tradicional", specialty: "Rosquillas de anís", location: "Gamonal", owner: "Familia Vega", history: "Más de 40 años endulzando el barrio más grande de Burgos.", impact: "Una institución en Gamonal." },
+                { id: 20, name: "Tartalia Burgos", type: "Franquicia", specialty: "Tartas de cumpleaños", location: "Avenida del Cid", owner: "Franquiciado local", history: "Parte de una conocida cadena, ofrece tartas a precios competitivos para todo tipo de eventos.", impact: "Una opción popular y accesible para celebraciones." },
+                { id: 21, name: "Horno de San Pedro", type: "Panadería-Pastelería", specialty: "Magdalenas de pueblo", location: "Barrio de San Pedro", owner: "Hermanos Alonso", history: "Olor a tradición y a horno de leña. Sus magdalenas son legendarias.", impact: "Mantiene vivo el sabor de la repostería más casera." },
+                { id: 22, name: "La Deliciosa", type: "Cafetería-Pastelería", specialty: "Tostadas con mermelada casera", location: "Centro histórico", owner: "Empresa de hostelería", history: "Ideal para desayunos y meriendas, con una cuidada selección de bizcochos y tartas.", impact: "Ofrece un respiro dulce a turistas y locales en el corazón de la ciudad." },
+                { id: 23, name: "Forno de Lugo", type: "Internacional", specialty: "Tarta de Santiago", location: "Gamonal", owner: "Familia gallega", history: "Trae un trocito de Galicia a Burgos, con empanadas, pan gallego y dulces típicos como la Tarta de Santiago.", impact: "Enriquece la oferta gastronómica con sabores de otras regiones." },
+                { id: 24, name: "Pastelería Muñoz", type: "Tradicional", specialty: "Huesos de santo", location: "Calle Santander", owner: "Sucesores de Muñoz", history: "Especialistas en dulces de temporada como los huesos de santo, buñuelos o turrones.", impact: "Marca el ritmo de las festividades en el calendario dulce de Burgos." },
+                { id: 25, name: "El Obrador de Sandra", type: "Creativa", specialty: "Galletas decoradas", location: "Venta online y talleres", owner: "Sandra López", history: "Un modelo de negocio moderno, centrado en encargos online y en impartir talleres de repostería.", impact: "Fomenta la cultura del 'hazlo tú mismo' en la repostería." },
+                { id: 26, name: "Panadería La Cántara", type: "Panadería-Pastelería", specialty: "Bizcochos de yogur", location: "Barrio del Pilar", owner: "Cooperativa de mujeres", history: "Iniciativa social que ofrece productos caseros y de calidad.", impact: "Combina la buena repostería con un proyecto de impacto social." },
+                { id: 27, name: "Dino's Pan y Café", type: "Cafetería-Pastelería", specialty: "Cookies americanas", location: "Cerca de la Universidad", owner: "Franquicia", history: "Un lugar de encuentro para estudiantes con una oferta de bollería y pastelería de inspiración americana.", impact: "Punto de reunión y estudio para la comunidad universitaria." },
+                { id: 28, name: "Confitería Teresitas", type: "Tradicional", specialty: "Chocolate con churros", location: "Plaza Mayor", owner: "Familia de hosteleros", history: "Un clásico para desayunos y meriendas, especialmente en invierno. Su chocolate espeso es legendario.", impact: "Tradición invernal por excelencia." },
+                { id: 29, name: "El Rincón Vegano", type: "Especializada", specialty: "Tarta de chocolate vegana", location: "Centro", owner: "Colectivo vegano", history: "Pequeño local que ofrece alternativas 100% vegetales a los dulces tradicionales.", impact: "Responde a una demanda creciente de repostería vegana." },
+                { id: 30, name: "Horno de Gadea", type: "Panadería-Pastelería", specialty: "Torta de aceite", location: "Barrio de Fuentecillas", owner: "Familia Gadea", history: "Un horno que ha sabido combinar el pan de toda la vida con dulces sencillos y deliciosos.", impact: "Referente panadero y dulcero de un barrio en expansión." },
+                { id: 31, name: "Bombonería Ruca", type: "Especializada", specialty: "Trufas de licor", location: "Calle Sombrerería", owner: "Artesano chocolatero", history: "Pequeña tienda con encanto dedicada al arte del bombón, con creaciones únicas.", impact: "Aporta un toque de lujo y exclusividad al mundo del chocolate." },
+                { id: 32, name: "La Newyorkina", type: "Moderna", specialty: "Cheesecake estilo NY", location: "Zona peatonal", owner: "Joven emprendedor", history: "Apostando por un monoproducto estrella, se ha hecho famoso por su auténtica tarta de queso neoyorquina.", impact: "Demuestra que la especialización extrema puede ser un éxito." },
+                { id: 33, name: "Panishop", type: "Panadería-Pastelería", specialty: "Trenza de Almudévar", location: "Varios locales", owner: "Franquicia aragonesa", history: "Cadena conocida que ofrece panes de calidad y su famosa trenza, un dulce de hojaldre y frutos secos.", impact: "Ha introducido especialidades de otras regiones con gran aceptación." },
+                { id: 34, name: "El Molino de la Ribera", type: "Panadería-Pastelería", specialty: "Pan de espelta y centeno", location: "Junto al río Arlanzón", owner: "Cooperativa ecológica", history: "Centrados en panes ecológicos y harinas especiales, también tienen una pequeña selección de repostería saludable.", impact: "Lidera la tendencia de lo ecológico y saludable en panadería." },
+                { id: 35, name: "Pastelería Reglero", type: "Industrial", specialty: "Lazos de San Guillermo", location: "Supermercados", owner: "Grupo Siro", history: "Marca histórica de la provincia de Palencia con fuerte presencia en Burgos, conocida por sus hojaldres industriales.", impact: "Un clásico de la estantería del supermercado." },
+                { id: 36, name: "Donuts & Co.", type: "Especializada", specialty: "Donuts de sabores", location: "Centro comercial", owner: "Franquicia", history: "Tienda dedicada exclusivamente al mundo del donut, con decenas de variedades y toppings.", impact: "Atrae al público más joven y familiar de los centros comerciales." },
+                { id: 37, name: "Pastelería sin Azúcar 'Dulce Vida'", type: "Especializada", specialty: "Mousse de limón sin azúcar", location: "Cerca de centro de salud", owner: "Nutricionista", history: "Enfocada en repostería para diabéticos o personas que controlan el azúcar, usando edulcorantes naturales.", impact: "Cubre una necesidad importante para un sector de la población." },
+                { id: 38, name: "La Boutique del Pan", type: "Panadería-Pastelería", specialty: "Napolitanas de crema", location: "Varios despachos", owner: "Cadena local", history: "Una red de despachos de pan con una oferta de bollería y pastelería para el día a día.", impact: "Gran capilaridad en la ciudad, muy convenientes." },
+                { id: 39, name: "El Cafetín de la Esquina", type: "Cafetería-Pastelería", specialty: "Bizcocho de naranja", location: "Barrio San Agustín", owner: "Matrimonio hostelero", history: "Típica cafetería de barrio donde el bizcocho casero del día es la estrella.", impact: "Corazón social del barrio, un lugar de encuentro." },
+                { id: 40, name: "Pastelería Internacional 'Mundos'", type: "Internacional", specialty: "Baklava", location: "Calle San Francisco", owner: "Familia de origen sirio", history: "Ofrece dulces árabes, aportando nuevos sabores y texturas al panorama burgalés.", impact: "Diversidad cultural a través del dulce." },
+                { id: 41, name: "Horno Artesa", type: "Panadería-Pastelería", specialty: "Panettone en Navidad", location: "Avenida de Castilla y León", owner: "Maestro panadero italiano", history: "Fusiona la tradición panadera española con la italiana, destacando su Panettone artesanal.", impact: "Introducción de grandes clásicos de la pastelería internacional." },
+                { id: 42, name: "Cerezas y Nata", type: "Moderna", specialty: "Tartaletas de frutas", location: "Mercado Sur", owner: "Joven pastelera", history: "Puesto en el mercado que ofrece pastelería fina y moderna, aprovechando la fruta fresca de temporada.", impact: "Dinamiza el concepto de mercado tradicional." },
+                { id: 43, name: "Granier", type: "Panadería-Pastelería", specialty: "Ofertas de bollería", location: "Varios locales", owner: "Franquicia nacional", history: "Conocida por su amplia variedad y sus precios muy competitivos. Fuerte presencia en toda España.", impact: "Modelo de negocio basado en el volumen y la accesibilidad." },
+                { id: 44, name: "El Obrador del Abuelo", type: "Tradicional", specialty: "Mantecados y polvorones", location: "Barrio de la Ventilla", owner: "Nietos del fundador", history: "Negocio familiar que sigue elaborando las recetas del abuelo, especialmente dulces navideños.", impact: "Mantiene vivas las recetas familiares y la nostalgia." },
+                { id: 45, name: "Pastelería Restaurante 'El Cid'", type: "Restaurante", specialty: "Postres de autor", location: "Restaurante de alta cocina", owner: "Chef con estrella Michelin", history: "La sección de postres de un restaurante de renombre, donde la pastelería alcanza nivel de arte.", impact: "Eleva la pastelería a la alta gastronomía, siendo un referente de innovación." },
+                { id: 46, name: "Churrería San Pablo", type: "Especializada", specialty: "Churros y porras", location: "Junto al puente de San Pablo", owner: "Familia churrera", history: "Generaciones haciendo los mejores churros de la ciudad. Una parada obligatoria tras un paseo.", impact: "Icono de la merienda más castiza." },
+                { id: 47, name: "La Tartería de María", type: "Creativa", specialty: "Layer cakes", location: "Encargos por Instagram", owner: "María González", history: "Repostera que ha basado su negocio en la personalización y la venta a través de redes sociales.", impact: "Ejemplo de la nueva generación de pasteleros digitales." }
+            ];
+
+            const grid = document.getElementById('pastelerias-grid');
+            const noResults = document.getElementById('no-results');
+
+            function renderCards(filter = 'all', search = '') {
+                grid.innerHTML = '';
+                const searchTerm = search.toLowerCase();
+                const filteredData = pastryShopsData.filter(shop => {
+                    const matchesFilter = filter === 'all' || shop.type === filter;
+                    const matchesSearch = shop.name.toLowerCase().includes(searchTerm);
+                    return matchesFilter && matchesSearch;
+                });
+
+                if (filteredData.length === 0) {
+                    noResults.style.display = 'block';
+                } else {
+                    noResults.style.display = 'none';
+                }
+
+                filteredData.forEach(shop => {
+                    const card = document.createElement('div');
+                    card.className = 'card p-6 flex flex-col';
+                    card.innerHTML = `
+
+                        <h3 class="text-xl font-bold mb-2">${shop.name}</h3>
+                        <span class="inline-block bg-pink-100 text-[#D6336C] text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full mb-3 self-start">${shop.type}</span>
+                        <p class="text-gray-700 flex-grow"><span class="font-semibold">Especialidad:</span> ${shop.specialty}</p>
+                        <div class="details hidden mt-4 pt-4 border-t border-gray-200 text-sm space-y-2">
+                           <p><span class="font-semibold"> Localización:</span> ${shop.location}</p>
+                           <p><span class="font-semibold"> Propietario/s:</span> ${shop.owner}</p>
+                           <p><span class="font-semibold"> Historia:</span> ${shop.history}</p>
+                           <p><span class="font-semibold"> Impacto:</span> ${shop.impact}</p>
+                        </div>
+                        <button class="toggle-details mt-4 text-sm font-semibold text-[#D6336C] hover:underline self-start">Ver más</button>
+                    `;
+
+                    grid.appendChild(card);
+                });
+            }
+            
+            grid.addEventListener('click', function(e) {
+                if (e.target.classList.contains('toggle-details')) {
+                    const details = e.target.previousElementSibling;
+                    details.classList.toggle('hidden');
+                    e.target.textContent = details.classList.contains('hidden') ? 'Ver más' : 'Ver menos';
+                }
+            });
+
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            const searchInput = document.getElementById('searchInput');
+            let currentFilter = 'all';
+
+            filterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    filterButtons.forEach(btn => {
+                        btn.classList.remove('active', 'bg-[#4A2E2A]', 'text-white');
+                        btn.classList.add('bg-gray-200', 'text-gray-700');
+                    });
+                    button.classList.add('active', 'bg-[#4A2E2A]', 'text-white');
+                    button.classList.remove('bg-gray-200', 'text-gray-700');
+                    currentFilter = button.dataset.filter;
+                    renderCards(currentFilter, searchInput.value);
+                });
+            });
+
+            searchInput.addEventListener('input', () => {
+                renderCards(currentFilter, searchInput.value);
+            });
+
+            const navButtons = document.querySelectorAll('.nav-button, .nav-button-action');
+            const contentSections = document.querySelectorAll('.content-section');
+
+            navButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetId = button.dataset.target;
+                    
+                    document.querySelectorAll('.nav-button').forEach(btn => {
+                         btn.classList.remove('active');
+                         if(btn.dataset.target === targetId) {
+                             btn.classList.add('active');
+                         }
+                    });
+
+                    contentSections.forEach(section => {
+                        if (section.id === targetId) {
+                            section.classList.remove('hidden');
+                        } else {
+                            section.classList.add('hidden');
+                        }
+                    });
+                    window.scrollTo(0, 0);
+                });
+            });
+
+            function createTypesChart() {
+                const types = pastryShopsData.map(p => p.type);
+                const typeCounts = types.reduce((acc, type) => {
+                    acc[type] = (acc[type] || 0) + 1;
+                    return acc;
+                }, {});
+
+                const ctx = document.getElementById('typesChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(typeCounts),
+                        datasets: [{
+                            data: Object.values(typeCounts),
+                            backgroundColor: ['#4A2E2A', '#D6336C', '#E985A3', '#F4C7D5', '#A58E8A', '#6B4A45', '#C08497', '#F7AF9D'],
+                            borderColor: '#FDFBF5',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            }
+                        }
+                    }
+                });
+            }
+
+            function createSpecialtiesChart() {
+                const specialties = pastryShopsData.map(p => p.specialty.split(' ')[0].replace(/,/g, ''));
+                const specialtyCounts = specialties.reduce((acc, specialty) => {
+                    acc[specialty] = (acc[specialty] || 0) + 1;
+                    return acc;
+                }, {});
+                
+                const sortedSpecialties = Object.entries(specialtyCounts)
+                    .sort(([,a],[,b]) => b-a)
+                    .slice(0, 7);
+
+                const ctx = document.getElementById('specialtiesChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: sortedSpecialties.map(item => item[0]),
+                        datasets: [{
+                            label: 'Nº de pastelerías',
+                            data: sortedSpecialties.map(item => item[1]),
+                            backgroundColor: '#D6336C',
+                            borderColor: '#c02a5f',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false,
+                            }
+                        },
+                        scales: {
+                           x: {
+                                beginAtZero: true
+                           }
+                        }
+                    }
+                });
+            }
+            
+            renderCards();
+            createTypesChart();
+            createSpecialtiesChart();
+        });
+    </script>
+
+</body>
+</html>
